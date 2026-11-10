@@ -1,0 +1,60 @@
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+    function signedIn() {
+      return request.auth != null;
+    }
+
+    // Chat IDs are built as "<uidA>_<uidB>" (sorted), so membership can be
+    // checked without reading the users' documents.
+    function isChatMember(chatId) {
+      return signedIn() && request.auth.uid in chatId.split('_');
+    }
+
+    match /users/{uid} {
+      allow read: if signedIn();
+      allow write: if signedIn() && request.auth.uid == uid;
+    }
+
+    match /emergencyContacts/{contactId} {
+      allow read: if signedIn() && resource.data.userId == request.auth.uid;
+      allow create: if signedIn() && request.resource.data.userId == request.auth.uid;
+      allow update: if signedIn()
+        && resource.data.userId == request.auth.uid
+        && request.resource.data.userId == request.auth.uid;
+      allow delete: if signedIn() && resource.data.userId == request.auth.uid;
+    }
+
+    match /emergencySessions/{sessionId} {
+      allow read: if signedIn() && resource.data.userId == request.auth.uid;
+      allow create: if signedIn() && request.resource.data.userId == request.auth.uid;
+      allow update: if signedIn() && resource.data.userId == request.auth.uid;
+      allow delete: if signedIn() && resource.data.userId == request.auth.uid;
+    }
+
+    match /locationUpdates/{updateId} {
+      allow read: if false;
+      allow create: if signedIn()
+        && get(/databases/$(database)/documents/emergencySessions/$(request.resource.data.sessionId)).data.userId == request.auth.uid;
+      allow update, delete: if false;
+    }
+
+    // One-to-one chats live under chats/<uidA>_<uidB>/messages.
+    match /chats/{chatId} {
+      allow read: if isChatMember(chatId);
+      allow create, update: if isChatMember(chatId);
+      allow delete: if false;
+
+      match /messages/{messageId} {
+        allow read: if isChatMember(chatId);
+        allow create: if isChatMember(chatId)
+          && request.resource.data.senderId == request.auth.uid;
+        allow update, delete: if false;
+      }
+    }
+
+    match /{document=**} {
+      allow read, write: if false;
+    }
+  }
+}

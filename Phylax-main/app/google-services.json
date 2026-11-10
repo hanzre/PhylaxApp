@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "498581682354",
+    "project_id": "phylax-7344d",
+    "storage_bucket": "phylax-7344d.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:498581682354:android:f4a7d3a2840accbfc2f1ab",
+        "android_client_info": {
+          "package_name": "com.example.phylax"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyCXhA7kNTDz0btII4NEMM4xdjoV2jOgKiM"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
